@@ -40,13 +40,12 @@
       font-weight: bold;
     }
     .btn {
-      padding: 10px 16px;
+      padding: 8px 12px;
       background-color: #0066cc;
       color: #fff;
       border: none;
-      border-radius: 8px;
+      border-radius: 6px;
       cursor: pointer;
-      margin-top: 10px;
     }
     .btn:disabled {
       background-color: #ccc;
@@ -71,12 +70,6 @@
     .xp-bar {
       margin-bottom: 10px;
     }
-    a.task-link {
-      display: inline-block;
-      margin-top: 10px;
-      color: #0066cc;
-      text-decoration: underline;
-    }
     .welcome {
       text-align: center;
       margin-top: 20px;
@@ -88,9 +81,12 @@
       margin-top: 10px;
     }
     .task-box input[type="text"] {
-      padding: 8px;
+      padding: 6px;
       width: 60%;
       margin-right: 10px;
+    }
+    .question {
+      margin-bottom: 10px;
     }
   </style>
 </head>
@@ -100,12 +96,12 @@
   <div class="intro">
     <h3>🎮 Welcome, Apprentice QS!</h3>
     <p>This is your personal quest to master Estimation, Costing & Quantity Surveying.</p>
-    <p>✅ Complete each task to earn XP and level up!</p>
+    <p>✅ Complete each level's questions to earn XP and level up!</p>
   </div>
 
   <div class="welcome">
     <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Avatar">
-    <p style="color:#555;">Welcome to your QS learning journey! Start your quests below 👇</p>
+    <p style="color:#555;">Start your QS journey below 👇</p>
   </div>
 
   <div class="xp-bar">
@@ -118,85 +114,62 @@
   <div class="level" id="level1">
     <h2>Level 1: Valley of Measurements</h2>
     <p>🎯 Objective: Master unit conversions</p>
-    <div class="task-box">
-      <p>Convert 1 meter to feet:</p>
-      <input type="text" id="ans1" placeholder="Enter your answer">
-      <button class="btn" onclick="checkAnswer(1, '3.28', 50)">Submit</button>
-      <p id="status1"></p>
-    </div>
-  </div>
-
-  <div class="level" id="level2">
-    <h2>Level 2: The BOQ Temple</h2>
-    <p>🎯 Objective: Prepare a BOQ for a simple project</p>
-    <div class="task-box">
-      <p>What is the unit of measurement for plastering?</p>
-      <input type="text" id="ans2" placeholder="Enter your answer">
-      <button class="btn" onclick="checkAnswer(2, 'sqm', 100)">Submit</button>
-      <p id="status2"></p>
-    </div>
-  </div>
-
-  <div class="level" id="level3">
-    <h2>Level 3: Rate Analysis Caverns</h2>
-    <p>🎯 Objective: Analyze the rate for one construction item</p>
-    <div class="task-box">
-      <p>What is the main cost component in concrete rate analysis?</p>
-      <input type="text" id="ans3" placeholder="Enter your answer">
-      <button class="btn" onclick="checkAnswer(3, 'cement', 100)">Submit</button>
-      <p id="status3"></p>
-    </div>
-  </div>
-
-  <div class="level" id="level4">
-    <h2>Level 4: Procurement Docks</h2>
-    <p>🎯 Objective: Learn tendering and vendor comparison</p>
-    <div class="task-box">
-      <p>Which document compares vendor prices?</p>
-      <input type="text" id="ans4" placeholder="Enter your answer">
-      <button class="btn" onclick="checkAnswer(4, 'comparison sheet', 80)">Submit</button>
-      <p id="status4"></p>
-    </div>
-  </div>
-
-  <div class="level" id="level5">
-    <h2>Level 5: Estimator’s Arena</h2>
-    <p>🎯 Objective: Estimate total cost including contingencies</p>
-    <div class="task-box">
-      <p>What is the typical percentage of contingency in cost estimation?</p>
-      <input type="text" id="ans5" placeholder="Enter your answer">
-      <button class="btn" onclick="checkAnswer(5, '5%', 120)">Submit</button>
-      <p id="status5"></p>
-    </div>
-  </div>
-
-  <div class="level" id="level6">
-    <h2>Level 6: Dimension of Drawing Take-Off</h2>
-    <p>🎯 Objective: Do take-off from basic drawings</p>
-    <div class="task-box">
-      <p>Name the method used for quantity take-off from drawings:</p>
-      <input type="text" id="ans6" placeholder="Enter your answer">
-      <button class="btn" onclick="checkAnswer(6, 'centerline method', 120)">Submit</button>
-      <p id="status6"></p>
-    </div>
+    <div class="task-box" id="tasks1"></div>
+    <p id="status1"></p>
   </div>
 
   <script>
+    const levels = {
+      1: {
+        xp: 100,
+        questions: [
+          { q: "Convert 1 meter to feet", a: "3.28" },
+          { q: "1 foot equals how many inches?", a: "12" },
+          { q: "1 yard is how many feet?", a: "3" },
+          { q: "How many sq.ft in 1 sq.m?", a: "10.76" },
+          { q: "How many sq.m in 1 cent?", a: "40.47" },
+          { q: "How many sq.ft in 1 ground?", a: "2400" },
+          { q: "1 acre is how many cents?", a: "100" },
+          { q: "1 cu.m equals how many liters?", a: "1000" },
+          { q: "1 cu.m equals how many cu.ft?", a: "35.3" },
+          { q: "1 sq.yard equals how many sq.ft?", a: "9" },
+        ]
+      }
+    };
+
     let xp = 0;
-    let totalXP = 570;
+    let totalXP = 100;
 
-    function checkAnswer(level, correctAnswer, points) {
-      const userInput = document.getElementById(`ans${level}`).value.trim().toLowerCase();
-      const status = document.getElementById(`status${level}`);
-      const button = document.querySelector(`#level${level} .btn`);
+    function renderQuestions(levelId) {
+      const container = document.getElementById(`tasks${levelId}`);
+      const questions = levels[levelId].questions;
+      questions.forEach((item, index) => {
+        const div = document.createElement('div');
+        div.className = 'question';
+        div.innerHTML = `
+          <p>${index + 1}. ${item.q}</p>
+          <input type="text" id="ans${levelId}_${index}" placeholder="Answer">
+          <button class="btn" onclick="checkAnswer(${levelId}, ${index})">Submit</button>
+        `;
+        container.appendChild(div);
+      });
+    }
 
-      if (userInput === correctAnswer.toLowerCase()) {
-        xp += points;
-        status.innerHTML = `✅ <span class='complete'>Correct! (${points} XP)</span>`;
+    function checkAnswer(levelId, index) {
+      const input = document.getElementById(`ans${levelId}_${index}`);
+      const userAnswer = input.value.trim().toLowerCase();
+      const correct = levels[levelId].questions[index].a.toLowerCase();
+      const status = document.getElementById(`status${levelId}`);
+      const button = input.nextElementSibling;
+
+      if (userAnswer === correct) {
+        xp += levels[levelId].xp / levels[levelId].questions.length;
+        status.innerHTML = `<span class='complete'>✅ Question ${index + 1} Correct!</span>`;
+        input.disabled = true;
         button.disabled = true;
         updateProgressBar();
       } else {
-        status.innerHTML = `❌ <span style='color:red;'>Incorrect. Try again!</span>`;
+        status.innerHTML = `<span style='color:red;'>❌ Question ${index + 1} Incorrect. Try again!</span>`;
       }
     }
 
@@ -206,6 +179,9 @@
       bar.style.width = percent + "%";
       bar.textContent = percent + "%";
     }
+
+    // Render questions for level 1 on page load
+    renderQuestions(1);
   </script>
 </body>
 </html>
