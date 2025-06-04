@@ -88,6 +88,10 @@
     .question {
       margin-bottom: 10px;
     }
+    .locked {
+      background-color: #eee;
+      opacity: 0.6;
+    }
   </style>
 </head>
 <body>
@@ -118,6 +122,14 @@
     <p id="status1"></p>
   </div>
 
+  <div class="level locked" id="level2">
+    <h2>Level 2: Castle of Calculation (🔒 Locked)</h2>
+    <p>🎯 Objective: Practice quantity take-off basics</p>
+    <p style="color: gray;">Unlock by scoring at least 80% in Level 1</p>
+    <div class="task-box" id="tasks2"></div>
+    <p id="status2"></p>
+  </div>
+
   <script>
     const levels = {
       1: {
@@ -134,14 +146,34 @@
           { q: "1 cu.m equals how many cu.ft?", a: "35.3" },
           { q: "1 sq.yard equals how many sq.ft?", a: "9" },
         ]
+      },
+      2: {
+        xp: 100,
+        questions: [
+          { q: "If a wall is 10m long and 3m high, what is its area?", a: "30" },
+          { q: "What is the volume of a 2m x 2m x 2m cube?", a: "8" },
+          { q: "How many bricks are required for 1 cu.m?", a: "500" },
+          { q: "What is the formula for area of a triangle?", a: "0.5*b*h" },
+          { q: "What is the length of a room with area 20 sq.m and width 4m?", a: "5" },
+          { q: "How many bags of cement in 1 cu.m?", a: "30" },
+          { q: "Rate analysis involves what 3 key components?", a: "material, labour, machinery" },
+          { q: "What is the thumb rule for plastering in mm?", a: "12" },
+          { q: "Typical wastage for cement is?", a: "2" },
+          { q: "Concrete ratio for M20?", a: "1:1.5:3" },
+        ]
       }
     };
 
     let xp = 0;
     let totalXP = 100;
+    let completed = {
+      1: false,
+      2: false
+    };
 
     function renderQuestions(levelId) {
       const container = document.getElementById(`tasks${levelId}`);
+      container.innerHTML = '';
       const questions = levels[levelId].questions;
       questions.forEach((item, index) => {
         const div = document.createElement('div');
@@ -164,13 +196,15 @@
 
       if (userAnswer === correct) {
         xp += levels[levelId].xp / levels[levelId].questions.length;
-        status.innerHTML = `<span class='complete'>✅ Question ${index + 1} Correct!</span>`;
         input.disabled = true;
         button.disabled = true;
         updateProgressBar();
+        status.innerHTML = `<span class='complete'>✅ Question ${index + 1} Correct!</span>`;
       } else {
         status.innerHTML = `<span style='color:red;'>❌ Question ${index + 1} Incorrect. Try again!</span>`;
       }
+
+      checkUnlockNext(levelId);
     }
 
     function updateProgressBar() {
@@ -180,7 +214,25 @@
       bar.textContent = percent + "%";
     }
 
-    // Render questions for level 1 on page load
+    function checkUnlockNext(levelId) {
+      const correctCount = levels[levelId].questions.filter((q, i) => {
+        const val = document.getElementById(`ans${levelId}_${i}`).value.trim().toLowerCase();
+        return val === q.a.toLowerCase();
+      }).length;
+
+      const percent = (correctCount / levels[levelId].questions.length) * 100;
+      if (percent >= 80 && !completed[levelId]) {
+        completed[levelId] = true;
+        const nextLevelId = levelId + 1;
+        const nextLevel = document.getElementById(`level${nextLevelId}`);
+        if (nextLevel) {
+          nextLevel.classList.remove("locked");
+          nextLevel.querySelector("h2").innerHTML = `Level ${nextLevelId}: Castle of Calculation`;
+          renderQuestions(nextLevelId);
+        }
+      }
+    }
+
     renderQuestions(1);
   </script>
 </body>
