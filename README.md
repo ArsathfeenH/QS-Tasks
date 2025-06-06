@@ -1,239 +1,311 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Realm of Quantaria: QS Level-Up Tracker</title>
+  <title>Quantaria - QS Tracker</title>
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #f5f7fa;
+      font-family: Arial, sans-serif;
+      background-color: #f2f2f2;
       margin: 0;
-      padding: 20px;
+      padding: 0;
     }
-    h1 {
+
+    .container {
+      max-width: 600px;
+      margin: 50px auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h2, h3, h4 {
       text-align: center;
-      color: #3a3a3a;
     }
-    .intro {
-      background: #e3f2fd;
-      padding: 15px;
-      border-radius: 10px;
-      margin-bottom: 20px;
-    }
-    .intro h3 {
-      margin-top: 0;
-    }
-    .level {
-      background-color: #ffffff;
-      border: 2px solid #ccc;
-      border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 20px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-    .level h2 {
-      color: #0066cc;
-    }
-    .complete {
-      color: green;
-      font-weight: bold;
-    }
-    .btn {
-      padding: 8px 12px;
-      background-color: #0066cc;
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    .btn:disabled {
-      background-color: #ccc;
-    }
-    .progress-container {
-      background-color: #ddd;
-      border-radius: 25px;
+
+    .question {
       margin: 20px 0;
-      height: 24px;
+    }
+
+    input[type="text"] {
       width: 100%;
-      overflow: hidden;
-    }
-    .progress-bar {
-      height: 100%;
-      width: 0%;
-      background-color: #28a745;
-      text-align: center;
-      line-height: 24px;
-      color: white;
-      font-weight: bold;
-    }
-    .xp-bar {
-      margin-bottom: 10px;
-    }
-    .welcome {
-      text-align: center;
-      margin-top: 20px;
-    }
-    .welcome img {
-      width: 100px;
-    }
-    .task-box {
+      padding: 10px;
       margin-top: 10px;
     }
-    .task-box input[type="text"] {
-      padding: 6px;
-      width: 60%;
-      margin-right: 10px;
+
+    button {
+      padding: 10px 20px;
+      background-color: #28a745;
+      border: none;
+      color: white;
+      cursor: pointer;
+      margin-top: 10px;
     }
-    .question {
-      margin-bottom: 10px;
+
+    button:hover {
+      background-color: #218838;
     }
-    .locked {
-      background-color: #eee;
-      opacity: 0.6;
+
+    .hint, .mcq {
+      background: #e9ecef;
+      padding: 10px;
+      margin-top: 10px;
+    }
+
+    .leaderboard, .feedback {
+      margin-top: 30px;
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 5px;
+    }
+
+    .level-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .hidden {
+      display: none;
     }
   </style>
 </head>
+
 <body>
-  <h1>🏰 Realm of Quantaria: QS Level-Up Tracker</h1>
+  <div class="container">
+    <h2>Welcome to Quantaria - QS Tracker</h2>
+    <div id="login">
+      <label>Enter your name:</label>
+      <input type="text" id="playerName" />
+      <button onclick="startGame()">Start</button>
+    </div>
 
-  <div class="intro">
-    <h3>🎮 Welcome, Apprentice QS!</h3>
-    <p>This is your personal quest to master Estimation, Costing & Quantity Surveying.</p>
-    <p>✅ Complete each level's questions to earn XP and level up!</p>
-  </div>
+    <div id="levelSelector" class="hidden">
+      <h3>Select a Level</h3>
+      <div class="level-buttons" id="levelButtons"></div>
+    </div>
 
-  <div class="welcome">
-    <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Avatar">
-    <p style="color:#555;">Start your QS journey below 👇</p>
-  </div>
+    <div id="game" class="hidden">
+      <div id="levelTitle"></div>
+      <div id="questionSection"></div>
+      <input type="text" id="answer" placeholder="Your answer" />
+      <button onclick="submitAnswer()">Submit</button>
+      <div class="hint" id="hint" style="display:none"></div>
+      <button id="dontKnowBtn" onclick="showMCQ()" style="display:none">Don't Know?</button>
+      <div class="mcq" id="mcqSection" style="display:none"></div>
+      <div id="feedbackSection" class="feedback hidden">
+        <h4>Feedback</h4>
+        <textarea id="feedback" placeholder="Your feedback (optional)"></textarea><br>
+        <button onclick="submitFeedback()">Submit Feedback</button>
+      </div>
+      <div id="score"></div>
+    </div>
 
-  <div class="xp-bar">
-    <label>XP Progress:</label>
-    <div class="progress-container">
-      <div id="progressBar" class="progress-bar">0%</div>
+    <div class="leaderboard">
+      <h3>Leaderboard</h3>
+      <ul id="leaderboard"></ul>
     </div>
   </div>
 
-  <div class="level" id="level1">
-    <h2>Level 1: Valley of Measurements</h2>
-    <p>🎯 Objective: Master unit conversions</p>
-    <div class="task-box" id="tasks1"></div>
-    <p id="status1"></p>
-  </div>
-
-  <div class="level locked" id="level2">
-    <h2>Level 2: Castle of Calculation (🔒 Locked)</h2>
-    <p>🎯 Objective: Practice quantity take-off basics</p>
-    <p style="color: gray;">Unlock by scoring at least 80% in Level 1</p>
-    <div class="task-box" id="tasks2"></div>
-    <p id="status2"></p>
-  </div>
-
   <script>
-    const levels = {
-      1: {
-        xp: 100,
-        questions: [
-          { q: "Convert 1 meter to feet", a: "3.28" },
-          { q: "1 foot equals how many inches?", a: "12" },
-          { q: "1 yard is how many feet?", a: "3" },
-          { q: "How many sq.ft in 1 sq.m?", a: "10.76" },
-          { q: "How many sq.m in 1 cent?", a: "40.47" },
-          { q: "How many sq.ft in 1 ground?", a: "2400" },
-          { q: "1 acre is how many cents?", a: "100" },
-          { q: "1 cu.m equals how many liters?", a: "1000" },
-          { q: "1 cu.m equals how many cu.ft?", a: "35.3" },
-          { q: "1 sq.yard equals how many sq.ft?", a: "9" },
-        ]
-      },
-      2: {
-        xp: 100,
-        questions: [
-          { q: "If a wall is 10m long and 3m high, what is its area?", a: "30" },
-          { q: "What is the volume of a 2m x 2m x 2m cube?", a: "8" },
-          { q: "How many bricks are required for 1 cu.m?", a: "500" },
-          { q: "What is the formula for area of a triangle?", a: "0.5*b*h" },
-          { q: "What is the length of a room with area 20 sq.m and width 4m?", a: "5" },
-          { q: "How many bags of cement in 1 cu.m?", a: "30" },
-          { q: "Rate analysis involves what 3 key components?", a: "material, labour, machinery" },
-          { q: "What is the thumb rule for plastering in mm?", a: "12" },
-          { q: "Typical wastage for cement is?", a: "2" },
-          { q: "Concrete ratio for M20?", a: "1:1.5:3" },
-        ]
-      }
-    };
+    let currentLevel = 0;
+    let questionIndex = 0;
+    let attempts = 0;
+    let score = 0;
+    let playerName = '';
+    const requiredScore = 70;
 
-    let xp = 0;
-    let totalXP = 100;
-    let completed = {
-      1: false,
-      2: false
-    };
+    const levels = [
+  {
+    title: "Level 1: Basic Unit Conversion",
+    questions: [
+      { q: "1m = __ft", a: "3.28", hint: "Between 3ft and 4ft", options: ["2.4", "3.28", "4.2", "1.5"] },
+      { q: "1ft = __inches", a: "12", hint: "Between 10 and 15", options: ["10", "11", "12", "13"] },
+      { q: "1yard = __ft", a: "3", hint: "Between 2 and 4", options: ["2", "3", "4", "5"] },
+      { q: "1sq.m = __sq.ft", a: "10.764", hint: "Between 10 and 11", options: ["9.9", "10.1", "10.764", "11.3"] },
+      { q: "1acre = __cent", a: "100", hint: "Between 90 and 110", options: ["80", "100", "120", "150"] }
+    ]
+  },
+  {
+    title: "Level 2: Building Material Identification",
+    questions: [
+      { q: "Which material is most commonly used for RCC?", a: "Concrete", hint: "It's a mix of cement, sand, and aggregate", options: ["Steel", "Concrete", "Bricks", "Wood"] },
+      { q: "Which material is used in waterproofing?", a: "Bitumen", hint: "Sticky black substance", options: ["Sand", "Clay", "Bitumen", "Gravel"] },
+      { q: "Which test is used for brick strength?", a: "Compression test", hint: "It's a standard strength test", options: ["Tension test", "Flexure test", "Compression test", "Impact test"] },
+      { q: "What is used as binding material in mortar?", a: "Cement", hint: "Comes in bags", options: ["Clay", "Cement", "Lime", "Gypsum"] },
+      { q: "Which is a lightweight material?", a: "AAC block", hint: "Used as a replacement for bricks", options: ["Concrete", "Clay brick", "AAC block", "Stone"] }
+    ]
+  },
+  {
+    title: "Level 3: Basic BOQ & Measurement Units",
+    questions: [
+      { q: "Unit of measurement for concrete in BOQ?", a: "cu.m", hint: "It’s a volume unit", options: ["sq.m", "cu.m", "kg", "meter"] },
+      { q: "Unit for plastering work?", a: "sq.m", hint: "It’s a surface area unit", options: ["cu.m", "sq.m", "m", "kg"] },
+      { q: "What is DSR?", a: "Delhi Schedule of Rates", hint: "Published by CPWD", options: ["Design Schedule Rule", "Delhi Schedule of Rates", "Departmental Standard Rate", "Design Safety Ratio"] },
+      { q: "BOQ stands for?", a: "Bill of Quantities", hint: "Used in tendering", options: ["Bill of Quarters", "Board of Quality", "Bill of Quantities", "Bulk of Quantity"] },
+      { q: "Which unit is used for steel bars?", a: "kg", hint: "It’s a weight-based item", options: ["cu.m", "sq.m", "kg", "m"] }
+    ]
+  },
+  {
+    title: "Level 4: Rate Analysis Basics",
+    questions: [
+      { q: "Which factor affects labor rate?", a: "Location", hint: "City vs village", options: ["Color", "Location", "Shape", "Size"] },
+      { q: "What is included in rate analysis?", a: "Material, labor, overhead", hint: "All direct and indirect costs", options: ["Only material", "Only labor", "Material, labor, overhead", "Only taxes"] },
+      { q: "Which document helps in rate analysis?", a: "DSR", hint: "CPWD published", options: ["BOQ", "IS code", "DSR", "Site log"] },
+      { q: "Profit margin in rate analysis is usually?", a: "10%", hint: "Common percentage", options: ["5%", "10%", "15%", "20%"] },
+      { q: "Rate analysis is mostly done for?", a: "Estimating cost", hint: "For planning budget", options: ["Drawing", "Casting", "Estimating cost", "Inspection"] }
+    ]
+  },
+  {
+    title: "Level 5: Quantity Take-Off",
+    questions: [
+      { q: "Which drawing is most used in QTO?", a: "Plan", hint: "Top view", options: ["Elevation", "Plan", "Section", "Detail"] },
+      { q: "Main method used in QTO?", a: "Center line method", hint: "Common for wall calculations", options: ["Center line method", "Plinth method", "Volume method", "Line method"] },
+      { q: "Quantity of concrete is taken in?", a: "cu.m", hint: "Always measured in volume", options: ["sq.m", "cu.m", "kg", "m"] },
+      { q: "Quantity of plaster is taken in?", a: "sq.m", hint: "Area based measurement", options: ["cu.m", "sq.m", "m", "litre"] },
+      { q: "Formula for volume?", a: "L x B x H", hint: "Three dimensions", options: ["L + B + H", "L x B x H", "2 x (L + B)", "L x H"] }
+    ]
+  },
+  {
+    title: "Level 6: QS Practical Scenario",
+    questions: [
+      { q: "A site needs 100 cu.m concrete. 1 truck = 6 cu.m. Trucks needed?", a: "17", hint: "Round up after division", options: ["15", "16", "17", "18"] },
+      { q: "A wall is 3m high, 10m long, and 0.2m thick. Volume?", a: "6", hint: "Use L x B x H", options: ["5", "6", "7", "8"] },
+      { q: "A room 4x4m is tiled with 2x2ft tiles. How many tiles?", a: "43", hint: "Convert units", options: ["36", "40", "43", "45"] },
+      { q: "Rate of painting is ₹25/sq.m. Room has 80sq.m. Total?", a: "2000", hint: "Multiply directly", options: ["1800", "2000", "2200", "2500"] },
+      { q: "Steel weight = D²/162. D=12mm. Weight/m?", a: "0.89", hint: "Plug in D", options: ["0.85", "0.89", "0.91", "0.95"] }
+    ]
+  }
+];
 
-    function renderQuestions(levelId) {
-      const container = document.getElementById(`tasks${levelId}`);
+    function startGame() {
+      playerName = document.getElementById("playerName").value.trim();
+      if (!playerName) return alert("Please enter your name.");
+      document.getElementById("login").classList.add("hidden");
+      document.getElementById("levelSelector").classList.remove("hidden");
+      generateLevelButtons();
+      loadLeaderboard();
+    }
+
+    function generateLevelButtons() {
+      const container = document.getElementById("levelButtons");
       container.innerHTML = '';
-      const questions = levels[levelId].questions;
-      questions.forEach((item, index) => {
-        const div = document.createElement('div');
-        div.className = 'question';
-        div.innerHTML = `
-          <p>${index + 1}. ${item.q}</p>
-          <input type="text" id="ans${levelId}_${index}" placeholder="Answer">
-          <button class="btn" onclick="checkAnswer(${levelId}, ${index})">Submit</button>
-        `;
-        container.appendChild(div);
+      for (let i = 0; i < levels.length; i++) {
+        const btn = document.createElement("button");
+        btn.innerText = levels[i].title;
+        btn.disabled = !isLevelUnlocked(i);
+        btn.onclick = () => loadLevel(i);
+        container.appendChild(btn);
+      }
+    }
+
+    function isLevelUnlocked(levelIndex) {
+      if (levelIndex === 0) return true;
+      const previousScore = JSON.parse(localStorage.getItem(playerName + "_score"))?.[levelIndex - 1] || 0;
+      return previousScore >= requiredScore;
+    }
+
+    function loadLevel(levelNum) {
+      currentLevel = levelNum;
+      questionIndex = 0;
+      attempts = 0;
+      score = 0;
+      document.getElementById("levelSelector").classList.add("hidden");
+      document.getElementById("game").classList.remove("hidden");
+      document.getElementById("levelTitle").innerText = levels[currentLevel].title;
+      loadQuestion();
+    }
+
+    function loadQuestion() {
+      const currentQ = levels[currentLevel].questions[questionIndex];
+      document.getElementById("questionSection").innerText = currentQ.q;
+      document.getElementById("answer").value = "";
+      document.getElementById("hint").style.display = "none";
+      document.getElementById("dontKnowBtn").style.display = "none";
+      document.getElementById("mcqSection").style.display = "none";
+    }
+
+    function submitAnswer() {
+      const userAnswer = document.getElementById("answer").value.trim();
+      const correct = levels[currentLevel].questions[questionIndex].a;
+      attempts++;
+      if (userAnswer.toLowerCase() === correct.toLowerCase()) {
+        let points = attempts <= 2 ? 100 : attempts <= 4 ? 75 : attempts <= 6 ? 50 : 20;
+        score += points / levels[currentLevel].questions.length;
+        nextOrEnd();
+      } else {
+        if (attempts === 2) showHint();
+        else if (attempts === 4) document.getElementById("dontKnowBtn").style.display = "block";
+        else if (attempts > 6) nextOrEnd();
+      }
+    }
+
+    function showHint() {
+      document.getElementById("hint").innerText = levels[currentLevel].questions[questionIndex].hint;
+      document.getElementById("hint").style.display = "block";
+    }
+
+    function showMCQ() {
+      const options = levels[currentLevel].questions[questionIndex].options;
+      const mcq = document.getElementById("mcqSection");
+      mcq.innerHTML = "";
+      options.forEach(opt => {
+        const btn = document.createElement("button");
+        btn.innerText = opt;
+        btn.onclick = () => {
+          document.getElementById("answer").value = opt;
+          submitAnswer();
+        };
+        mcq.appendChild(btn);
+      });
+      mcq.style.display = "block";
+    }
+
+    function nextOrEnd() {
+      questionIndex++;
+      attempts = 0;
+      if (questionIndex < levels[currentLevel].questions.length) {
+        loadQuestion();
+      } else {
+        endLevel();
+      }
+    }
+
+    function endLevel() {
+      const finalScore = Math.round(score);
+      document.getElementById("score").innerText = `Level Complete! Your Score: ${finalScore}%`;
+      let stored = JSON.parse(localStorage.getItem(playerName + "_score")) || [];
+      stored[currentLevel] = finalScore;
+      localStorage.setItem(playerName + "_score", JSON.stringify(stored));
+      loadLeaderboard();
+      document.getElementById("feedbackSection").classList.remove("hidden");
+    }
+
+    function submitFeedback() {
+      const feedback = document.getElementById("feedback").value;
+      const msg = `${playerName} - ${Math.round(score)} - ${feedback}`;
+      alert("Feedback submitted: " + msg);
+    }
+
+    function loadLeaderboard() {
+      const board = document.getElementById("leaderboard");
+      board.innerHTML = "";
+      Object.keys(localStorage).forEach(key => {
+        if (key.endsWith("_score")) {
+          const name = key.replace("_score", "");
+          const scores = JSON.parse(localStorage.getItem(key));
+          const total = scores.reduce((a, b) => a + b, 0);
+          const li = document.createElement("li");
+          li.innerText = `${name}: ${total}%`;
+          board.appendChild(li);
+        }
       });
     }
-
-    function checkAnswer(levelId, index) {
-      const input = document.getElementById(`ans${levelId}_${index}`);
-      const userAnswer = input.value.trim().toLowerCase();
-      const correct = levels[levelId].questions[index].a.toLowerCase();
-      const status = document.getElementById(`status${levelId}`);
-      const button = input.nextElementSibling;
-
-      if (userAnswer === correct) {
-        xp += levels[levelId].xp / levels[levelId].questions.length;
-        input.disabled = true;
-        button.disabled = true;
-        updateProgressBar();
-        status.innerHTML = `<span class='complete'>✅ Question ${index + 1} Correct!</span>`;
-      } else {
-        status.innerHTML = `<span style='color:red;'>❌ Question ${index + 1} Incorrect. Try again!</span>`;
-      }
-
-      checkUnlockNext(levelId);
-    }
-
-    function updateProgressBar() {
-      const bar = document.getElementById("progressBar");
-      const percent = Math.min((xp / totalXP) * 100, 100).toFixed(0);
-      bar.style.width = percent + "%";
-      bar.textContent = percent + "%";
-    }
-
-    function checkUnlockNext(levelId) {
-      const correctCount = levels[levelId].questions.filter((q, i) => {
-        const val = document.getElementById(`ans${levelId}_${i}`).value.trim().toLowerCase();
-        return val === q.a.toLowerCase();
-      }).length;
-
-      const percent = (correctCount / levels[levelId].questions.length) * 100;
-      if (percent >= 80 && !completed[levelId]) {
-        completed[levelId] = true;
-        const nextLevelId = levelId + 1;
-        const nextLevel = document.getElementById(`level${nextLevelId}`);
-        if (nextLevel) {
-          nextLevel.classList.remove("locked");
-          nextLevel.querySelector("h2").innerHTML = `Level ${nextLevelId}: Castle of Calculation`;
-          renderQuestions(nextLevelId);
-        }
-      }
-    }
-
-    renderQuestions(1);
   </script>
 </body>
+
 </html>
